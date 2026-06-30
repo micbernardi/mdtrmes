@@ -540,8 +540,9 @@ function buildPivotXlsx(rows, ci, meses){
     var NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
     var p=[];
     p.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n');
-    // rowGrandTotals="0" remove a COLUNA Total Geral (a direita); colGrandTotals fica (linha embaixo)
-    p.push('<pivotTableDefinition '+NS+' name="'+esc(name)+'" cacheId="0" applyNumberFormats="0" applyBorderFormats="0" applyFontFormats="0" applyPatternFormats="0" applyAlignmentFormats="0" applyWidthHeightFormats="1" dataCaption="Valores" updatedVersion="8" minRefreshableVersion="3" useAutoFormatting="1" itemPrintTitles="1" createdVersion="8" indent="0" outline="1" outlineData="1" multipleFieldFilters="0" rowGrandTotals="0" rowHeaderCaption="'+esc(rowCaption)+'" colHeaderCaption=".">');
+    // colGrandTotals="0" remove a COLUNA Total Geral (a direita = grand do eixo de coluna/meses),
+    // de forma persistente mesmo ao expandir. rowGrandTotals fica default (=1) -> mantem a LINHA embaixo.
+    p.push('<pivotTableDefinition '+NS+' name="'+esc(name)+'" cacheId="0" applyNumberFormats="0" applyBorderFormats="0" applyFontFormats="0" applyPatternFormats="0" applyAlignmentFormats="0" applyWidthHeightFormats="1" dataCaption="Valores" updatedVersion="8" minRefreshableVersion="3" useAutoFormatting="1" itemPrintTitles="1" createdVersion="8" indent="0" outline="1" outlineData="1" multipleFieldFilters="0" colGrandTotals="0" rowHeaderCaption="'+esc(rowCaption)+'" colHeaderCaption=".">');
     p.push('<location ref="A1:'+lastColL+lastRow+'" firstHeaderRow="1" firstDataRow="2" firstDataCol="1"/>');
     p.push(pivotFields(rowOrder, 9));
     p.push('<rowFields count="'+rowOrder.length+'">'+rowOrder.map(function(x){return '<field x="'+x+'"/>';}).join('')+'</rowFields>');
