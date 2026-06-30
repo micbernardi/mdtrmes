@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organizador de Dinâmicas IQVIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink:#16203A; --ink-soft:#5B6B85; --ink-faint:#8696AE;
+    --navy:#1F3864; --navy-700:#16294A;
+    --blue:#2D6CC9; --teal:#11B5A4; --teal-deep:#0B8C7F;
+    --amber:#C9881F; --danger:#CF4B33;
+    --bg:#EEF2F7; --surface:#FFFFFF; --surface-2:#F7F9FC; --surface-3:#EFF3F9;
+    --line:#DCE3ED; --line-strong:#C3CEDD;
+    --shadow:0 1px 2px rgba(22,32,58,.04), 0 8px 28px rgba(22,32,58,.06);
+    --shadow-lg:0 4px 14px rgba(22,32,58,.08), 0 24px 60px rgba(22,32,58,.10);
+    --radius:14px; --radius-sm:9px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 72px;}
+
+  /* HEADER */
+  header.top{margin-bottom:30px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--teal-deep);font-weight:600;margin:0 0 14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:26px;height:2px;background:var(--teal);border-radius:2px;display:inline-block;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;font-size:clamp(28px,4.4vw,42px);
+    line-height:1.06;letter-spacing:-.015em;margin:0 0 12px;color:var(--ink);
+  }
+  h1 .accent{color:var(--navy);}
+  .lead{font-size:16px;color:var(--ink-soft);max-width:62ch;margin:0;}
+  .lead b{color:var(--ink);font-weight:600;}
+
+  /* DYNAMIC MAP (signature) */
+  .maps{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0 26px;}
+  .dmap{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 20px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .dmap::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--navy),var(--blue));}
+  .dmap h3{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;letter-spacing:.02em;
+    margin:0 0 3px;color:var(--navy);text-transform:uppercase;
+  }
+  .dmap .cap{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);margin:0 0 16px;letter-spacing:.01em;}
+  .tree{margin:0;padding:0;list-style:none;}
+  .tnode{position:relative;padding:5px 0 5px 26px;font-size:13.5px;color:var(--ink);}
+  .tnode::before{
+    content:"";position:absolute;left:7px;top:13px;width:9px;height:9px;border-radius:50%;
+    background:var(--surface);border:2px solid var(--blue);
+  }
+  .tnode::after{
+    content:"";position:absolute;left:11px;top:-3px;width:2px;height:16px;background:var(--line-strong);
+  }
+  .tnode:first-child::after{display:none;}
+  .tnode .lv{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-faint);margin-right:7px;}
+  .tnode.t0::before{border-color:var(--navy);background:var(--navy);}
+  .tnode.t0{font-weight:600;}
+  .dmap .axis{
+    margin-top:16px;padding-top:13px;border-top:1px dashed var(--line);
+    display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--ink-soft);
+  }
+  .dmap .axis .row{display:flex;gap:8px;align-items:center;}
+  .dmap .axis .k{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);min-width:62px;}
+  .dmap .axis .v{color:var(--ink);font-weight:500;}
+  .pill{display:inline-block;background:var(--surface-3);border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-size:11.5px;color:var(--navy);font-weight:500;}
+
+  /* DROPZONE */
+  .drop{
+    background:var(--surface);border:2px dashed var(--line-strong);border-radius:var(--radius);
+    padding:40px 28px;text-align:center;cursor:pointer;transition:border-color .18s,background .18s,transform .12s;
+    box-shadow:var(--shadow);position:relative;
+  }
+  .drop:hover{border-color:var(--blue);background:var(--surface-2);}
+  .drop.drag{border-color:var(--teal);background:#F0FBF9;transform:scale(1.004);}
+  .drop.has-file{border-style:solid;border-color:var(--line);}
+  .drop .ico{
+    width:52px;height:52px;margin:0 auto 16px;border-radius:13px;
+    background:linear-gradient(135deg,var(--navy),var(--blue));
+    display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(45,108,201,.28);
+  }
+  .drop .ico svg{width:26px;height:26px;stroke:#fff;}
+  .drop .dt{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:17px;color:var(--ink);margin:0 0 6px;}
+  .drop .ds{font-size:13.5px;color:var(--ink-soft);margin:0;}
+  .drop .ds b{color:var(--navy);}
+  input[type=file]{display:none;}
+
+  /* PANELS */
+  .panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);margin-top:18px;overflow:hidden;
+    animation:rise .32s cubic-bezier(.2,.7,.3,1);
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .panel-h{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);}
+  .panel-h .ttl{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;align-items:center;gap:9px;}
+  .panel-h .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px rgba(17,181,164,.16);}
+  .panel-h .fname{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-faint);max-width:46ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .panel-b{padding:20px;}
+
+  /* METRICS */
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;}
+  .metric{background:var(--surface);padding:13px 15px;}
+  .metric .n{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:21px;color:var(--navy);letter-spacing:-.01em;line-height:1.1;}
+  .metric .l{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;}
+
+  .months{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .months .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;margin-right:4px;}
+  .chip{background:var(--surface-3);border:1px solid var(--line);border-radius:6px;padding:2px 9px;font-size:12px;color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+
+  .cols{margin-top:16px;display:flex;flex-wrap:wrap;gap:7px;}
+  .colchip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:7px;font-size:12.5px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);}
+  .colchip svg{width:13px;height:13px;}
+  .colchip.ok{border-color:#BfE6DE;background:#F1FAF8;color:var(--teal-deep);}
+  .colchip.ok svg{stroke:var(--teal-deep);}
+  .colchip.miss{border-color:#F0C9Bf;background:#FDF3F0;color:var(--danger);}
+  .colchip.miss svg{stroke:var(--danger);}
+
+  /* ACTION */
+  .actions{margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .btn{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;
+    border:none;border-radius:10px;padding:14px 26px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:10px;transition:transform .12s,box-shadow .18s,background .18s;
+  }
+  .btn svg{width:18px;height:18px;}
+  .btn-primary{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#fff;box-shadow:0 6px 18px rgba(11,140,127,.30);}
+  .btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 26px rgba(11,140,127,.36);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-ghost{background:var(--surface);color:var(--navy);border:1px solid var(--line-strong);box-shadow:none;}
+  .btn-ghost:hover{background:var(--surface-2);border-color:var(--blue);}
+  .hint{font-size:12.5px;color:var(--ink-soft);}
+
+  /* PROGRESS */
+  .prog{margin-top:18px;}
+  .prog-bar{height:8px;background:var(--surface-3);border-radius:6px;overflow:hidden;border:1px solid var(--line);}
+  .prog-fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:6px;transition:width .35s cubic-bezier(.3,.7,.3,1);}
+  .prog-txt{margin-top:9px;font-size:13px;color:var(--ink);display:flex;align-items:center;gap:9px;}
+  .spin{width:14px;height:14px;border:2px solid var(--line-strong);border-top-color:var(--teal);border-radius:50%;animation:sp .7s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  /* RESULT */
+  .done-card{display:flex;align-items:center;gap:16px;padding:18px;background:#F1FAF8;border:1px solid #BfE6DE;border-radius:var(--radius-sm);}
+  .done-card .badge{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--teal),var(--teal-deep));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .done-card .badge svg{width:22px;height:22px;stroke:#fff;}
+  .done-card .txt{flex:1;}
+  .done-card .txt .a{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--ink);}
+  .done-card .txt .b{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+
+  /* ERROR */
+  .err{margin-top:16px;padding:15px 18px;background:#FDF3F0;border:1px solid #F0C9Bf;border-radius:var(--radius-sm);color:#9E3320;font-size:13.5px;display:flex;gap:11px;align-items:flex-start;}
+  .err svg{width:18px;height:18px;stroke:var(--danger);flex-shrink:0;margin-top:1px;}
+
+  .note{margin-top:22px;padding:15px 18px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:var(--radius-sm);font-size:13px;color:var(--ink-soft);box-shadow:var(--shadow);}
+  .note b{color:var(--ink);font-weight:600;}
+  .note code{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--surface-3);padding:1px 6px;border-radius:4px;color:var(--navy);}
+
+  footer.bot{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  footer.bot .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .hidden{display:none !important;}
+
+  @media (max-width:720px){
+    .wrap{padding:28px 16px 56px;}
+    .maps{grid-template-columns:1fr;}
+    .panel-h .fname{max-width:24ch;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">Supera Farma · Regional Sul · IQVIA</p>
+    <h1>Organizador de<br><span class="accent">Dinâmicas IQVIA</span></h1>
+    <p class="lead">Sobe a base bruta exportada do IQVIA e recebe as <b>duas dinâmicas</b> já montadas, organizadas por setor e mês, com drill-down pronto para abrir em qualquer Excel. Tudo processado no seu navegador. Nenhum dado sai da máquina.</p>
+  </header>
+
+  <section class="maps">
+    <div class="dmap">
+      <h3>Dinâmica 1</h3>
+      <p class="cap">aba "PDV-MARCA-APRESENTAÇÃO"</p>
+      <ul class="tree">
+        <li class="tnode t0"><span class="lv">N1</span>Setor</li>
+        <li class="tnode"><span class="lv">N2</span>PDV</li>
+        <li class="tnode"><span class="lv">N3</span>Marca</li>
+        <li class="tnode"><span class="lv">N4</span>Apresentação</li>
+      </ul>
+      <div class="axis">
+        <div class="row"><span class="k">Colunas</span><span class="v">um por mês <span class="pill">mmm/aa</span></span></div>
+        <div class="row"><span class="k">Valor</span><span class="v">Soma de Valor</span></div>
+      </div>
+    </div>
+    <div class="dmap">
+      <h3>Dinâmica 2</h3>
+      <p class="cap">aba "MARCA-BRICK-PDV"</p>
+      <ul class="tree">
+        <li class="tnode t0"><span class="lv">N1</span>Setor</li>
+        <li class="tnode"><span class="lv">N2</span>Marca</li>
+        <li class="tnode"><span class="lv">N3</span>Brick</li>
+        <li class="tnode"><span class="lv">N4</span>PDV</li>
+      </ul>
+      <div class="axis">
+        <div class="row"><span class="k">Colunas</span><span class="v">um por mês <span class="pill">mmm/aa</span></span></div>
+        <div class="row"><span class="k">Valor</span><span class="v">Soma de Valor</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Selecionar arquivo da base IQVIA">
+    <div class="ico">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    </div>
+    <p class="dt" id="drop-title">Solte a base aqui</p>
+    <p class="ds" id="drop-sub">ou <b>clique para selecionar</b> · arquivo .xlsx exportado do IQVIA</p>
+    <input type="file" id="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+  </div>
+
+  <div class="prog hidden" id="prog">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-txt"><span class="spin" id="spin"></span><span id="prog-txt">Lendo base...</span></div>
+  </div>
+
+  <div class="err hidden" id="err">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="err-txt"></span>
+  </div>
+
+  <div class="panel hidden" id="summary">
+    <div class="panel-h">
+      <span class="ttl"><span class="dot"></span>Base reconhecida</span>
+      <span class="fname mono" id="sum-fname"></span>
+    </div>
+    <div class="panel-b">
+      <div class="metrics" id="metrics"></div>
+      <div class="months" id="months"></div>
+      <div class="cols" id="cols"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="gen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Gerar planilha
+        </button>
+        <span class="hint">Duas abas, recolhidas por setor. Expanda os níveis no próprio Excel.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="result">
+    <div class="panel-b">
+      <div class="done-card">
+        <div class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="txt">
+          <div class="a">Planilha gerada</div>
+          <div class="b" id="result-sub"></div>
+        </div>
+        <button class="btn btn-ghost" id="redown">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar de novo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Como funciona o drill-down.</b> As duas abas abrem recolhidas no nível de setor. Use os botões de contorno <code>1 2 3 4</code> no canto da planilha, ou o <code>+</code> ao lado de cada setor, para abrir os níveis. Os meses aparecem como <code>jun/25</code>, <code>jul/25</code> e assim por diante, na ordem cronológica detectada na base.
+  </div>
+
+  <footer class="bot">
+    <span>Processamento 100% local · vanilla JS + SheetJS</span>
+    <span class="mono">base &rarr; Table &rarr; dinâmica</span>
+  </footer>
+
+</div>
+
+<!-- ============ WORKER (processa fora da thread da UI) ============ -->
+<script id="worker-src" type="javascript/worker">
+importScripts('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+importScripts('https://cdn.jsdelivr.net/npm/fflate@0.8.3/umd/index.js');
+
+var STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0;\\(#,##0\\)"/></numFmts><fonts count="2"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><sz val="11"/><color theme="0"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor theme="8" tint="0.79998168889431442"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF002060"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="11"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" pivotButton="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" pivotButton="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="2" borderId="1" xfId="0" applyFill="1" applyBorder="1"/><xf numFmtId="17" fontId="0" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="17" fontId="0" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="6"><dxf><font><color theme="0"/></font><fill><patternFill patternType="solid"><bgColor rgb="FF002060"/></patternFill></fill><alignment horizontal="left" indent="0"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><fill><patternFill patternType="solid"><bgColor theme="4" tint="0.79998168889431442"/></patternFill></fill><alignment horizontal="left" indent="1"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><b/></font><fill><patternFill patternType="solid"><bgColor theme="0" tint="-4.9989318521683403E-2"/></patternFill></fill><alignment horizontal="right" indent="2"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><i/></font><alignment horizontal="right" indent="0"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><fill><patternFill patternType="solid"><bgColor theme="8" tint="0.79998168889431442"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><border outline="0"><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><vertical style="thin"><color indexed="64"/></vertical><horizontal style="thin"><color indexed="64"/></horizontal></border></dxf></dxfs></styleSheet>`;
+var THEME_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme"><a:themeElements><a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="44546A"/></a:dk2><a:lt2><a:srgbClr val="E7E6E6"/></a:lt2><a:accent1><a:srgbClr val="5B9BD5"/></a:accent1><a:accent2><a:srgbClr val="ED7D31"/></a:accent2><a:accent3><a:srgbClr val="A5A5A5"/></a:accent3><a:accent4><a:srgbClr val="FFC000"/></a:accent4><a:accent5><a:srgbClr val="4472C4"/></a:accent5><a:accent6><a:srgbClr val="70AD47"/></a:accent6><a:hlink><a:srgbClr val="0563C1"/></a:hlink><a:folHlink><a:srgbClr val="954F72"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Calibri Light" panose="020F0302020204030204"/><a:ea typeface=""/><a:cs typeface=""/><a:font script="Jpan" typeface="游ゴシック Light"/><a:font script="Hang" typeface="맑은 고딕"/><a:font script="Hans" typeface="等线 Light"/><a:font script="Hant" typeface="新細明體"/><a:font script="Arab" typeface="Times New Roman"/><a:font script="Hebr" typeface="Times New Roman"/><a:font script="Thai" typeface="Tahoma"/><a:font script="Ethi" typeface="Nyala"/><a:font script="Beng" typeface="Vrinda"/><a:font script="Gujr" typeface="Shruti"/><a:font script="Khmr" typeface="MoolBoran"/><a:font script="Knda" typeface="Tunga"/><a:font script="Guru" typeface="Raavi"/><a:font script="Cans" typeface="Euphemia"/><a:font script="Cher" typeface="Plantagenet Cherokee"/><a:font script="Yiii" typeface="Microsoft Yi Baiti"/><a:font script="Tibt" typeface="Microsoft Himalaya"/><a:font script="Thaa" typeface="MV Boli"/><a:font script="Deva" typeface="Mangal"/><a:font script="Telu" typeface="Gautami"/><a:font script="Taml" typeface="Latha"/><a:font script="Syrc" typeface="Estrangelo Edessa"/><a:font script="Orya" typeface="Kalinga"/><a:font script="Mlym" typeface="Kartika"/><a:font script="Laoo" typeface="DokChampa"/><a:font script="Sinh" typeface="Iskoola Pota"/><a:font script="Mong" typeface="Mongolian Baiti"/><a:font script="Viet" typeface="Times New Roman"/><a:font script="Uigh" typeface="Microsoft Uighur"/><a:font script="Geor" typeface="Sylfaen"/><a:font script="Armn" typeface="Arial"/><a:font script="Bugi" typeface="Leelawadee UI"/><a:font script="Bopo" typeface="Microsoft JhengHei"/><a:font script="Java" typeface="Javanese Text"/><a:font script="Lisu" typeface="Segoe UI"/><a:font script="Mymr" typeface="Myanmar Text"/><a:font script="Nkoo" typeface="Ebrima"/><a:font script="Olck" typeface="Nirmala UI"/><a:font script="Osma" typeface="Ebrima"/><a:font script="Phag" typeface="Phagspa"/><a:font script="Syrn" typeface="Estrangelo Edessa"/><a:font script="Syrj" typeface="Estrangelo Edessa"/><a:font script="Syre" typeface="Estrangelo Edessa"/><a:font script="Sora" typeface="Nirmala UI"/><a:font script="Tale" typeface="Microsoft Tai Le"/><a:font script="Talu" typeface="Microsoft New Tai Lue"/><a:font script="Tfng" typeface="Ebrima"/></a:majorFont><a:minorFont><a:latin typeface="Calibri" panose="020F0502020204030204"/><a:ea typeface=""/><a:cs typeface=""/><a:font script="Jpan" typeface="游ゴシック"/><a:font script="Hang" typeface="맑은 고딕"/><a:font script="Hans" typeface="等线"/><a:font script="Hant" typeface="新細明體"/><a:font script="Arab" typeface="Arial"/><a:font script="Hebr" typeface="Arial"/><a:font script="Thai" typeface="Tahoma"/><a:font script="Ethi" typeface="Nyala"/><a:font script="Beng" typeface="Vrinda"/><a:font script="Gujr" typeface="Shruti"/><a:font script="Khmr" typeface="DaunPenh"/><a:font script="Knda" typeface="Tunga"/><a:font script="Guru" typeface="Raavi"/><a:font script="Cans" typeface="Euphemia"/><a:font script="Cher" typeface="Plantagenet Cherokee"/><a:font script="Yiii" typeface="Microsoft Yi Baiti"/><a:font script="Tibt" typeface="Microsoft Himalaya"/><a:font script="Thaa" typeface="MV Boli"/><a:font script="Deva" typeface="Mangal"/><a:font script="Telu" typeface="Gautami"/><a:font script="Taml" typeface="Latha"/><a:font script="Syrc" typeface="Estrangelo Edessa"/><a:font script="Orya" typeface="Kalinga"/><a:font script="Mlym" typeface="Kartika"/><a:font script="Laoo" typeface="DokChampa"/><a:font script="Sinh" typeface="Iskoola Pota"/><a:font script="Mong" typeface="Mongolian Baiti"/><a:font script="Viet" typeface="Arial"/><a:font script="Uigh" typeface="Microsoft Uighur"/><a:font script="Geor" typeface="Sylfaen"/><a:font script="Armn" typeface="Arial"/><a:font script="Bugi" typeface="Leelawadee UI"/><a:font script="Bopo" typeface="Microsoft JhengHei"/><a:font script="Java" typeface="Javanese Text"/><a:font script="Lisu" typeface="Segoe UI"/><a:font script="Mymr" typeface="Myanmar Text"/><a:font script="Nkoo" typeface="Ebrima"/><a:font script="Olck" typeface="Nirmala UI"/><a:font script="Osma" typeface="Ebrima"/><a:font script="Phag" typeface="Phagspa"/><a:font script="Syrn" typeface="Estrangelo Edessa"/><a:font script="Syrj" typeface="Estrangelo Edessa"/><a:font script="Syre" typeface="Estrangelo Edessa"/><a:font script="Sora" typeface="Nirmala UI"/><a:font script="Tale" typeface="Microsoft Tai Le"/><a:font script="Talu" typeface="Microsoft New Tai Lue"/><a:font script="Tfng" typeface="Ebrima"/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:lumMod val="110000"/><a:satMod val="105000"/><a:tint val="67000"/></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:lumMod val="105000"/><a:satMod val="103000"/><a:tint val="73000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="105000"/><a:satMod val="109000"/><a:tint val="81000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:satMod val="103000"/><a:lumMod val="102000"/><a:tint val="94000"/></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:satMod val="110000"/><a:lumMod val="100000"/><a:shade val="100000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="99000"/><a:satMod val="120000"/><a:shade val="78000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln><a:ln w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln><a:ln w="19050" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad="57150" dist="19050" dir="5400000" algn="ctr" rotWithShape="0"><a:srgbClr val="000000"><a:alpha val="63000"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"><a:tint val="95000"/><a:satMod val="170000"/></a:schemeClr></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="93000"/><a:satMod val="150000"/><a:shade val="98000"/><a:lumMod val="102000"/></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:tint val="98000"/><a:satMod val="130000"/><a:shade val="90000"/><a:lumMod val="103000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="63000"/><a:satMod val="120000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/><a:extLst><a:ext uri="{05A4C25C-085E-4340-85A3-A5531E510DB2}"><thm15:themeFamily xmlns:thm15="http://schemas.microsoft.com/office/thememl/2012/main" name="Office Theme" id="{62F939B6-93AF-4DB8-9C6B-D6C7DFDC589F}" vid="{4A3C46E8-61CC-4603-A589-7422A47A8E4A}"/></a:ext></a:extLst></a:theme>`;
+
+var MESES_PT = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function fmtMes(v){ var s=String(v); if(/^\d{6}$/.test(s)){var y=s.slice(2,4),m=parseInt(s.slice(4,6),10); if(m>=1&&m<=12) return MESES_PT[m-1]+'/'+y;} return s; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtNum(v){ var f=+v; if(f===Math.floor(f)) return String(Math.trunc(f)); return String(f); }
+function col(n){ var s=''; while(n>0){ var r=(n-1)%26; s=String.fromCharCode(65+r)+s; n=Math.floor((n-1)/26); } return s; }
+function mesSerial(yyyymm){ var y=Math.floor(yyyymm/100), m=yyyymm%100; return Math.round((Date.UTC(y,m-1,1)-Date.UTC(1899,11,30))/86400000); }
+function mesISO(yyyymm){ var y=Math.floor(yyyymm/100), m=yyyymm%100; return y+'-'+(m<10?'0':'')+m+'-01T00:00:00'; }
+
+var WANT = ['Regional','Distrital','Setor','Marca','Brick','Bandeira','PDV','Apresentação','Valor','Mês'];
+var CACHE_ORDER = ['Regional','Distrital','Setor','Marca','Brick','Bandeira','PDV','Apresentação','Valor','Mês'];
+var STR_FIELDS  = ['Regional','Distrital','Setor','Marca','Brick','Bandeira','PDV','Apresentação'];
+var STATE = null;
+function progress(pct, msg){ postMessage({type:'progress', pct:pct, msg:msg}); }
+
+function analyze(buffer){
+  progress(8,'Lendo base...');
+  var wb = XLSX.read(buffer, {type:'array', dense:true});
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  var aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+
+  progress(40,'Mapeando colunas e meses...');
+  var hdr = -1;
+  for (var i=0;i<Math.min(20, aoa.length);i++){
+    var row = (aoa[i]||[]).map(function(x){ return x==null?'':String(x).trim(); });
+    var hits = 0;
+    for (var w=0;w<WANT.length;w++){ if (row.indexOf(WANT[w])>=0) hits++; }
+    if (hits>=6){ hdr=i; break; }
+  }
+  if (hdr<0) throw new Error('Nao encontrei a linha de cabecalho com as colunas do IQVIA (Regional, Setor, Marca, Valor, Mes...). Confira se o arquivo e a exportacao correta.');
+
+  var header = aoa[hdr].map(function(x){ return x==null?'':String(x).trim(); });
+  var ci = {};
+  for (var k=0;k<WANT.length;k++){ ci[WANT[k]] = header.indexOf(WANT[k]); }
+
+  var needed = ['Setor','PDV','Marca','Apresentação','Brick','Valor','Mês'];
+  var missing = [];
+  for (var n=0;n<needed.length;n++){ if (ci[needed[n]]<0) missing.push(needed[n]); }
+
+  var rows = [];
+  var sSetor={}, sPDV={}, sMarca={}, sBrick={}, sApr={}, sMes={};
+  var nSetor=0,nPDV=0,nMarca=0,nBrick=0,nApr=0;
+  for (var r=hdr+1;r<aoa.length;r++){
+    var ar = aoa[r]; if (!ar) continue;
+    var st = ar[ci['Setor']];
+    if (st==null || String(st).trim()==='') continue;
+    rows.push(ar);
+    var ks=String(st); if(!(ks in sSetor)){sSetor[ks]=1;nSetor++;}
+    if (ci['PDV']>=0){ var kp=String(ar[ci['PDV']]); if(!(kp in sPDV)){sPDV[kp]=1;nPDV++;} }
+    if (ci['Marca']>=0){ var km=String(ar[ci['Marca']]); if(!(km in sMarca)){sMarca[km]=1;nMarca++;} }
+    if (ci['Brick']>=0){ var kb=String(ar[ci['Brick']]); if(!(kb in sBrick)){sBrick[kb]=1;nBrick++;} }
+    if (ci['Apresentação']>=0){ var ka=String(ar[ci['Apresentação']]); if(!(ka in sApr)){sApr[ka]=1;nApr++;} }
+    if (ci['Mês']>=0){ var me=ar[ci['Mês']]; if(me!=null){ var kme=Number(me); if(!(kme in sMes)) sMes[kme]=1; } }
+  }
+  if (rows.length===0) throw new Error('A base nao tem linhas de dados abaixo do cabecalho.');
+
+  var meses = Object.keys(sMes).map(Number).sort(function(a,b){return a-b;});
+  STATE = { rows:rows, ci:ci, meses:meses };
+
+  postMessage({type:'summary', data:{
+    nLinhas: rows.length,
+    meses: meses.map(fmtMes),
+    nMeses: meses.length,
+    nSetor:nSetor, nPDV:nPDV, nMarca:nMarca, nBrick:nBrick, nApr:nApr,
+    present: WANT.map(function(w){ return {nome:w, ok: ci[w]>=0, req: needed.indexOf(w)>=0}; }),
+    missing: missing
+  }});
+}
+
+function buildPivotXlsx(rows, ci, meses){
+  var N = rows.length;
+  var nMes = meses.length;
+  var mesIdx = {}; meses.forEach(function(m,i){ mesIdx[m]=i; });
+
+  // sharedItems (primeira aparicao) + indices
+  var order={}, idxmap={};
+  STR_FIELDS.forEach(function(c){ order[c]=[]; idxmap[c]=new Map(); });
+  var recIdx={}; STR_FIELDS.forEach(function(c){ recIdx[c]=new Int32Array(N); });
+  var recMes=new Int32Array(N), recVal=new Float64Array(N);
+  var vmin=Infinity, vmax=-Infinity;
+  for (var i=0;i<N;i++){
+    var ar=rows[i];
+    for (var f=0;f<STR_FIELDS.length;f++){
+      var cf=STR_FIELDS[f];
+      var raw=ar[ci[cf]]; var key=raw==null?'':String(raw);
+      var mp=idxmap[cf]; var id=mp.get(key);
+      if (id===undefined){ id=order[cf].length; mp.set(key,id); order[cf].push(key); }
+      recIdx[cf][i]=id;
+    }
+    var v=+ar[ci['Valor']]; if(v!==v) v=0;
+    recVal[i]=v; if(v<vmin)vmin=v; if(v>vmax)vmax=v;
+    recMes[i]=mesIdx[+ar[ci['Mês']]];
+  }
+  if(!isFinite(vmin)){vmin=0;vmax=0;}
+  var setorList=order['Setor']; var nSet=setorList.length;
+
+  // vista recolhida: setor x mes (sem coluna total geral; mantem linha grand)
+  var grid=[]; for(var s=0;s<nSet;s++) grid.push(new Float64Array(nMes));
+  var grand=new Float64Array(nMes);
+  for (var i2=0;i2<N;i2++){ var si=recIdx['Setor'][i2], mi=recMes[i2], vv=recVal[i2]; grid[si][mi]+=vv; grand[mi]+=vv; }
+
+  // sharedStrings pool
+  var ssList=[], ssMap=new Map();
+  function S(str){ var k=String(str); var id=ssMap.get(k); if(id===undefined){ id=ssList.length; ssMap.set(k,id); ssList.push(k); } return id; }
+  var iSoma=S('Soma de Valor'), iDot=S('.'), iTG=S('Total Geral');
+  var iCap_MBP=S('MARCA/BRICK/PDV'), iCap_PMA=S('PDV/MARCA/APRESENTAÇÃO');
+  var setorS=setorList.map(function(x){ return S(x); });
+
+  // ===== SHEET (vista recolhida, estilos do gabarito, SEM coluna Total Geral) =====
+  // est = {b1, mesHdr, dados}
+  function buildSheet(capIdx, est){
+    var lastRow=2+nSet+1; // header(2) + setores + grand(1)
+    var lastColN=1+nMes;  // A + nMes meses (sem Total Geral)
+    var lastColL=col(lastColN);
+    var serials=meses.map(function(m){ return mesSerial(m); });
+    var p=[];
+    p.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n');
+    p.push('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">');
+    p.push('<dimension ref="A1:'+lastColL+lastRow+'"/>');
+    // freeze: coluna A + linha de cabecalho (igual gabarito)
+    p.push('<sheetViews><sheetView tabSelected="1" topLeftCell="A2" workbookViewId="0"><pane xSplit="1" ySplit="1" topLeftCell="B3" activePane="bottomRight" state="frozen"/><selection activeCell="A2" sqref="A2"/><selection pane="topRight" activeCell="B2" sqref="B2"/><selection pane="bottomLeft" activeCell="A3" sqref="A3"/><selection pane="bottomRight" activeCell="B3" sqref="B3"/></sheetView></sheetViews>');
+    p.push('<sheetFormatPr defaultRowHeight="14.5"/>');
+    // larguras: A larga; meses estreitos com style centered (2)
+    p.push('<cols><col min="1" max="1" width="42.90625" customWidth="1"/><col min="2" max="'+lastColN+'" width="7" style="2" customWidth="1"/></cols>');
+    p.push('<sheetData>');
+    // R1 oculta
+    p.push('<row r="1" spans="1:'+lastColN+'" hidden="1"><c r="A1" s="1" t="s"><v>'+iSoma+'</v></c><c r="B1" s="'+est.b1+'" t="s"><v>'+iDot+'</v></c></row>');
+    // R2 header: caption + meses (data, mmm-yy)
+    p.push('<row r="2" spans="1:'+lastColN+'"><c r="A2" s="8" t="s"><v>'+capIdx+'</v></c>');
+    for (var m=0;m<nMes;m++){ p.push('<c r="'+col(2+m)+'2" s="'+est.mesHdr+'"><v>'+serials[m]+'</v></c>'); }
+    p.push('</row>');
+    // setores: label azul escuro/branco + dados
+    for (var s2=0;s2<nSet;s2++){
+      var rr=3+s2;
+      p.push('<row r="'+rr+'" spans="1:'+lastColN+'"><c r="A'+rr+'" s="3" t="s"><v>'+setorS[s2]+'</v></c>');
+      for (var m2=0;m2<nMes;m2++){ p.push('<c r="'+col(2+m2)+rr+'" s="'+est.dados+'"><v>'+fmtNum(grid[s2][m2])+'</v></c>'); }
+      p.push('</row>');
+    }
+    // linha grand (Total Geral embaixo): label s=5 (borda, sem azul) + dados
+    var gr=3+nSet;
+    p.push('<row r="'+gr+'" spans="1:'+lastColN+'"><c r="A'+gr+'" s="5" t="s"><v>'+iTG+'</v></c>');
+    for (var m3=0;m3<nMes;m3++){ p.push('<c r="'+col(2+m3)+gr+'" s="'+est.dados+'"><v>'+fmtNum(grand[m3])+'</v></c>'); }
+    p.push('</row>');
+    p.push('</sheetData><pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/></worksheet>');
+    return p.join('');
+  }
+
+  // ===== pivotCacheDefinition =====
+  function cacheDef(){
+    var NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+    var p=[];
+    p.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n');
+    p.push('<pivotCacheDefinition '+NS+' r:id="rId1" refreshedBy="Supera BI" createdVersion="8" refreshedVersion="8" minRefreshableVersion="3" recordCount="'+N+'">');
+    p.push('<cacheSource type="worksheet"><worksheetSource name="Table1"/></cacheSource>');
+    p.push('<cacheFields count="10">');
+    STR_FIELDS.forEach(function(cf){
+      var lst=order[cf];
+      p.push('<cacheField name="'+esc(cf)+'" numFmtId="0"><sharedItems count="'+lst.length+'">');
+      for (var k=0;k<lst.length;k++) p.push('<s v="'+esc(lst[k])+'"/>');
+      p.push('</sharedItems></cacheField>');
+    });
+    p.push('<cacheField name="Valor" numFmtId="0"><sharedItems containsSemiMixedTypes="0" containsString="0" containsNumber="1" minValue="'+fmtNum(vmin)+'" maxValue="'+fmtNum(vmax)+'"/></cacheField>');
+    p.push('<cacheField name="Mês" numFmtId="17"><sharedItems containsSemiMixedTypes="0" containsNonDate="0" containsDate="1" containsString="0" minDate="'+mesISO(meses[0])+'" maxDate="'+mesISO(meses[nMes-1])+'" count="'+nMes+'">');
+    for (var mm=0;mm<nMes;mm++) p.push('<d v="'+mesISO(meses[mm])+'"/>');
+    p.push('</sharedItems></cacheField>');
+    p.push('</cacheFields></pivotCacheDefinition>');
+    return p.join('');
+  }
+
+  // ===== pivotCacheRecords =====
+  function cacheRecords(){
+    var NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+    var chunks=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<pivotCacheRecords '+NS+' count="'+N+'">'];
+    var R=recIdx['Regional'],D=recIdx['Distrital'],S2=recIdx['Setor'],MA=recIdx['Marca'],B=recIdx['Brick'],BA=recIdx['Bandeira'],P=recIdx['PDV'],AP=recIdx['Apresentação'];
+    var buf=[];
+    for (var i=0;i<N;i++){
+      buf.push('<r><x v="'+R[i]+'"/><x v="'+D[i]+'"/><x v="'+S2[i]+'"/><x v="'+MA[i]+'"/><x v="'+B[i]+'"/><x v="'+BA[i]+'"/><x v="'+P[i]+'"/><x v="'+AP[i]+'"/><n v="'+fmtNum(recVal[i])+'"/><x v="'+recMes[i]+'"/></r>');
+      if (buf.length>=8000){ chunks.push(buf.join('')); buf.length=0; }
+    }
+    chunks.push(buf.join('')); chunks.push('</pivotCacheRecords>');
+    return chunks.join('');
+  }
+
+  // ===== pivotTable =====
+  function card(fieldIdx){ var name=CACHE_ORDER[fieldIdx]; if (name==='Mês') return nMes; return order[name].length; }
+  function itemsBlock(n, withSd){
+    var its='';
+    for(var i=0;i<n;i++) its+= withSd ? '<item sd="0" x="'+i+'"/>' : '<item x="'+i+'"/>';
+    return '<items count="'+(n+1)+'">'+its+'<item t="default"/></items>';
+  }
+  function pivotFields(rowOrder, colAxis){
+    var lastRowField=rowOrder[rowOrder.length-1];
+    var out=['<pivotFields count="10">'];
+    for (var f=0;f<10;f++){
+      if (rowOrder.indexOf(f)>=0){
+        // rowFields nao-folha recebem sd=0 (recolhido); o ultimo nivel nao
+        var withSd = (f!==lastRowField);
+        out.push('<pivotField axis="axisRow" showAll="0">'+itemsBlock(card(f), withSd)+'</pivotField>');
+      }
+      else if (f===colAxis) out.push('<pivotField axis="axisCol" numFmtId="17" showAll="0">'+itemsBlock(card(f), false)+'</pivotField>');
+      else if (f===8) out.push('<pivotField dataField="1" showAll="0"/>');
+      else out.push('<pivotField showAll="0"/>');
+    }
+    out.push('</pivotFields>'); return out.join('');
+  }
+  function rowItemsCollapsed(){
+    var out=['<i><x/></i>'];
+    for (var k=1;k<nSet;k++) out.push('<i><x v="'+k+'"/></i>');
+    out.push('<i t="grand"><x/></i>'); // linha Total Geral embaixo (mantida)
+    return '<rowItems count="'+(nSet+1)+'">'+out.join('')+'</rowItems>';
+  }
+  function colItemsNoGrand(){
+    var out=['<i><x/></i>'];
+    for (var k=1;k<nMes;k++) out.push('<i><x v="'+k+'"/></i>'); // SEM grand (sem coluna Total Geral)
+    return '<colItems count="'+nMes+'">'+out.join('')+'</colItems>';
+  }
+  // FORMATS: ancoram a formatacao a ESTRUTURA da pivot (nao a celula), entao sobrevivem a expansao.
+  // Degrade por POSICAO na hierarquia (lido do modelo): dxf0=Setor(azul escuro), dxf1=nivel2(azul claro),
+  // dxf2=nivel3(cinza claro), dxf3=nivel4(branco), dxf4=header mes(azul claro), dxf5=bordas em tudo.
+  function formatsBlock(rowOrder){
+    var f=[];
+    f.push('<format dxfId="5"><pivotArea type="all" dataOnly="0" outline="0"/></format>'); // bordas em toda a tabela
+    rowOrder.forEach(function(fx,pos){ // cada nivel recebe a cor da sua posicao
+      var dxf = pos<3 ? pos : 3; // 0,1,2 e 3+ (folha sem fill)
+      f.push('<format dxfId="'+dxf+'"><pivotArea dataOnly="0" labelOnly="1" fieldPosition="0"><references count="1"><reference field="'+fx+'" count="0"/></references></pivotArea></format>');
+    });
+    f.push('<format dxfId="4"><pivotArea dataOnly="0" labelOnly="1" fieldPosition="0"><references count="1"><reference field="9" count="0"/></references></pivotArea></format>'); // header meses azul claro
+    return '<formats count="'+f.length+'">'+f.join('')+'</formats>';
+  }
+  function pivotTable(name, rowOrder, rowCaption){
+    var lastRow=2+nSet+1;
+    var lastColL=col(1+nMes); // sem coluna Total Geral
+    var NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
+    var p=[];
+    p.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n');
+    // rowGrandTotals="0" remove a COLUNA Total Geral (a direita); colGrandTotals fica (linha embaixo)
+    p.push('<pivotTableDefinition '+NS+' name="'+esc(name)+'" cacheId="0" applyNumberFormats="0" applyBorderFormats="0" applyFontFormats="0" applyPatternFormats="0" applyAlignmentFormats="0" applyWidthHeightFormats="1" dataCaption="Valores" updatedVersion="8" minRefreshableVersion="3" useAutoFormatting="1" itemPrintTitles="1" createdVersion="8" indent="0" outline="1" outlineData="1" multipleFieldFilters="0" rowGrandTotals="0" rowHeaderCaption="'+esc(rowCaption)+'" colHeaderCaption=".">');
+    p.push('<location ref="A1:'+lastColL+lastRow+'" firstHeaderRow="1" firstDataRow="2" firstDataCol="1"/>');
+    p.push(pivotFields(rowOrder, 9));
+    p.push('<rowFields count="'+rowOrder.length+'">'+rowOrder.map(function(x){return '<field x="'+x+'"/>';}).join('')+'</rowFields>');
+    p.push(rowItemsCollapsed());
+    p.push('<colFields count="1"><field x="9"/></colFields>');
+    p.push(colItemsNoGrand());
+    p.push('<dataFields count="1"><dataField name="Soma de Valor" fld="8" baseField="0" baseItem="0" numFmtId="164"/></dataFields>');
+    p.push(formatsBlock(rowOrder));
+    p.push('<pivotTableStyleInfo name="PivotStyleLight16" showRowHeaders="1" showColHeaders="1" showRowStripes="0" showColStripes="0" showLastColumn="1"/>');
+    p.push('</pivotTableDefinition>');
+    return p.join('');
+  }
+
+  function sharedStrings(){
+    var p=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'];
+    p.push('<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'+ssList.length+'" uniqueCount="'+ssList.length+'">');
+    for (var i=0;i<ssList.length;i++) p.push('<si><t xml:space="preserve">'+esc(ssList[i])+'</t></si>');
+    p.push('</sst>'); return p.join('');
+  }
+
+  // ===== ORDEM INVERTIDA: aba1 = MARCA-BRICK-PDV, aba2 = PDV-MARCA-APRESENTACAO =====
+  // sheet1 = MARCA-BRICK-PDV (dados centered s=7, meses s=9, B1 s=6)
+  var sheet1=buildSheet(iCap_MBP, {b1:6, mesHdr:9, dados:7});
+  // sheet2 = PDV-MARCA-APRESENTACAO (dados s=4, meses s=10, B1 s=1)
+  var sheet2=buildSheet(iCap_PMA, {b1:1, mesHdr:10, dados:4});
+  // pivotTable1 = MARCA-BRICK-PDV (Setor>Marca>Brick>PDV)
+  var pt1=pivotTable('Tabela dinâmica1',[2,3,4,6],'MARCA/BRICK/PDV');
+  // pivotTable2 = PDV-MARCA-APRESENTACAO (Setor>PDV>Marca>Apresentação)
+  var pt2=pivotTable('Tabela dinâmica2',[2,6,3,7],'PDV/MARCA/APRESENTAÇÃO');
+
+  // ===== plumbing =====
+  var contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    +'<Default Extension="xml" ContentType="application/xml"/>'
+    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    +'<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    +'<Override PartName="/xl/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>'
+    +'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+    +'<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>'
+    +'<Override PartName="/xl/pivotCache/pivotCacheDefinition1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"/>'
+    +'<Override PartName="/xl/pivotCache/pivotCacheRecords1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheRecords+xml"/>'
+    +'<Override PartName="/xl/pivotTables/pivotTable1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml"/>'
+    +'<Override PartName="/xl/pivotTables/pivotTable2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml"/>'
+    +'</Types>';
+  var relsRoot='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+    +'</Relationships>';
+  // workbook: ordem invertida (MARCA-BRICK-PDV primeiro)
+  var workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    +'<sheets><sheet name="MARCA-BRICK-PDV" sheetId="1" r:id="rId1"/><sheet name="PDV-MARCA-APRESENTAÇÃO" sheetId="2" r:id="rId2"/></sheets>'
+    +'<pivotCaches><pivotCache cacheId="0" r:id="rId3"/></pivotCaches></workbook>';
+  var workbookRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+    +'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>'
+    +'<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition" Target="pivotCache/pivotCacheDefinition1.xml"/>'
+    +'<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+    +'<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>'
+    +'<Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>'
+    +'</Relationships>';
+  var cacheDefRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords" Target="pivotCacheRecords1.xml"/></Relationships>';
+  var ptRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition" Target="../pivotCache/pivotCacheDefinition1.xml"/></Relationships>';
+  // sheet1 (MARCA-BRICK-PDV) -> pivotTable1 ; sheet2 (PDV-MARCA-APRES) -> pivotTable2
+  var sheet1Rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable" Target="../pivotTables/pivotTable1.xml"/></Relationships>';
+  var sheet2Rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable" Target="../pivotTables/pivotTable2.xml"/></Relationships>';
+
+  var ss=sharedStrings();
+  var enc=new TextEncoder();
+  var files={
+    '[Content_Types].xml': enc.encode(contentTypes),
+    '_rels/.rels': enc.encode(relsRoot),
+    'xl/workbook.xml': enc.encode(workbook),
+    'xl/_rels/workbook.xml.rels': enc.encode(workbookRels),
+    'xl/styles.xml': enc.encode(STYLES_XML),
+    'xl/theme/theme1.xml': enc.encode(THEME_XML),
+    'xl/sharedStrings.xml': enc.encode(ss),
+    'xl/worksheets/sheet1.xml': enc.encode(sheet1),
+    'xl/worksheets/sheet2.xml': enc.encode(sheet2),
+    'xl/worksheets/_rels/sheet1.xml.rels': enc.encode(sheet1Rels),
+    'xl/worksheets/_rels/sheet2.xml.rels': enc.encode(sheet2Rels),
+    'xl/pivotCache/pivotCacheDefinition1.xml': enc.encode(cacheDef()),
+    'xl/pivotCache/pivotCacheRecords1.xml': enc.encode(cacheRecords()),
+    'xl/pivotCache/_rels/pivotCacheDefinition1.xml.rels': enc.encode(cacheDefRels),
+    'xl/pivotTables/pivotTable1.xml': enc.encode(pt1),
+    'xl/pivotTables/pivotTable2.xml': enc.encode(pt2),
+    'xl/pivotTables/_rels/pivotTable1.xml.rels': enc.encode(ptRels),
+    'xl/pivotTables/_rels/pivotTable2.xml.rels': enc.encode(ptRels),
+  };
+  var zipped=fflate.zipSync(files,{level:6});
+  return {zip:zipped, info:{nSet:nSet, records:N, grand:Array.from(grand).reduce(function(a,b){return a+b;},0)}};
+}
+
+function generate(){
+  if (!STATE) throw new Error('Base ainda nao foi lida.');
+  progress(18,'Montando tabelas dinamicas nativas...');
+  var out = buildPivotXlsx(STATE.rows, STATE.ci, STATE.meses);
+  progress(92,'Compactando arquivo...');
+  var u8 = out.zip;
+  var buf = u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
+  postMessage({type:'done', buffer:buf, info:out.info}, [buf]);
+}
+
+onmessage = function(e){
+  var d = e.data;
+  try {
+    if (d.cmd === 'analyze'){ analyze(d.buffer); }
+    else if (d.cmd === 'generate'){ generate(); }
+  } catch(err){
+    postMessage({type:'error', msg: (err && err.message) ? err.message : String(err)});
+  }
+};
+</script>
+
+<!-- ============ UI (thread principal) ============ -->
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+
+  var worker = null;
+  function getWorker(){
+    if (worker) return worker;
+    var src = $('worker-src').textContent;
+    var blob = new Blob([src], {type:'application/javascript'});
+    worker = new Worker(URL.createObjectURL(blob));
+    worker.onmessage = onWorker;
+    worker.onerror = function(ev){ showError('Falha no processamento: ' + (ev.message||'erro desconhecido') + '. Verifique a conexão (a ferramenta carrega a biblioteca SheetJS de um CDN).'); };
+    return worker;
+  }
+
+  var drop = $('drop'), fileInput = $('file');
+  var baseName = 'base';
+  var outBlob = null, outName = 'DINAMICAS.xlsx';
+
+  function fmtInt(n){ return n.toLocaleString('pt-BR'); }
+
+  function reset(){
+    $('summary').classList.add('hidden');
+    $('result').classList.add('hidden');
+    $('err').classList.add('hidden');
+    $('prog').classList.add('hidden');
+    outBlob = null;
+  }
+
+  function showError(msg){
+    $('prog').classList.add('hidden');
+    $('err').classList.remove('hidden');
+    $('err-txt').textContent = msg;
+  }
+
+  function setProg(pct, msg){
+    $('prog').classList.remove('hidden');
+    $('prog-fill').style.width = pct + '%';
+    $('prog-txt').textContent = msg;
+  }
+
+  // ---- upload handlers ----
+  drop.addEventListener('click', function(){ fileInput.click(); });
+  drop.addEventListener('keydown', function(e){ if (e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); } });
+  drop.addEventListener('dragover', function(e){ e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', function(){ drop.classList.remove('drag'); });
+  drop.addEventListener('drop', function(e){
+    e.preventDefault(); drop.classList.remove('drag');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', function(e){
+    if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  function handleFile(file){
+    if (!/\.xlsx$/i.test(file.name)){
+      showError('Formato não suportado. Envie um arquivo .xlsx exportado do IQVIA.');
+      return;
+    }
+    reset();
+    baseName = file.name.replace(/\.xlsx$/i,'');
+    outName = baseName + '_DINAMICAS.xlsx';
+    drop.classList.add('has-file');
+    $('drop-title').textContent = file.name;
+    $('drop-sub').innerHTML = (file.size/1048576).toFixed(1) + ' MB · clique para trocar';
+    setProg(8, 'Lendo base...');
+    file.arrayBuffer().then(function(buf){
+      getWorker().postMessage({cmd:'analyze', buffer:buf}, [buf]);
+    });
+  }
+
+  // ---- worker messages ----
+  function onWorker(e){
+    var d = e.data;
+    if (d.type === 'progress'){ setProg(d.pct, d.msg); }
+    else if (d.type === 'summary'){ renderSummary(d.data); }
+    else if (d.type === 'done'){ onDone(d.buffer, d.info); }
+    else if (d.type === 'error'){ showError(d.msg); }
+  }
+
+  function renderSummary(s){
+    $('prog').classList.add('hidden');
+    $('sum-fname').textContent = baseName + '.xlsx';
+
+    var mset = [
+      ['Linhas', fmtInt(s.nLinhas)],
+      ['Meses', fmtInt(s.nMeses)],
+      ['Setores', fmtInt(s.nSetor)],
+      ['PDVs', fmtInt(s.nPDV)],
+      ['Marcas', fmtInt(s.nMarca)],
+      ['Bricks', fmtInt(s.nBrick)],
+      ['Apresent.', fmtInt(s.nApr)]
+    ];
+    $('metrics').innerHTML = mset.map(function(m){
+      return '<div class="metric"><div class="n">'+m[1]+'</div><div class="l">'+m[0]+'</div></div>';
+    }).join('');
+
+    $('months').innerHTML = '<span class="lbl">Período</span>' +
+      s.meses.map(function(m){ return '<span class="chip">'+m+'</span>'; }).join('');
+
+    var chk = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    var x = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    $('cols').innerHTML = s.present.filter(function(c){ return c.req; }).map(function(c){
+      var cls = c.ok ? 'ok' : 'miss';
+      return '<span class="colchip '+cls+'">'+(c.ok?chk:x)+c.nome+'</span>';
+    }).join('');
+
+    var gen = $('gen');
+    if (s.missing && s.missing.length){
+      gen.disabled = true;
+      showError('Faltam colunas necessárias na base: ' + s.missing.join(', ') + '. As duas dinâmicas precisam de Setor, PDV, Marca, Apresentação, Brick, Valor e Mês.');
+    } else {
+      gen.disabled = false;
+      $('err').classList.add('hidden');
+    }
+
+    $('summary').classList.remove('hidden');
+    $('result').classList.add('hidden');
+  }
+
+  $('gen').addEventListener('click', function(){
+    $('result').classList.add('hidden');
+    $('err').classList.add('hidden');
+    setProg(15, 'Iniciando...');
+    getWorker().postMessage({cmd:'generate'});
+  });
+
+  function onDone(buffer, info){
+    outBlob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    setProg(100, 'Concluído');
+    setTimeout(function(){ $('prog').classList.add('hidden'); }, 500);
+    $('result-sub').textContent =
+      'Duas tabelas dinâmicas nativas, recolhidas por setor · ' + fmtInt(info.nSet) + ' setores · ' +
+      'Total Geral ' + info.grand.toLocaleString('pt-BR',{maximumFractionDigits:2});
+    $('result').classList.remove('hidden');
+    download();
+  }
+
+  function download(){
+    if (!outBlob) return;
+    var url = URL.createObjectURL(outBlob);
+    var a = document.createElement('a');
+    a.href = url; a.download = outName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }
+  $('redown').addEventListener('click', download);
+
+})();
+</script>
+</body>
+</html>
