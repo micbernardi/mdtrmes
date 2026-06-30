@@ -193,7 +193,7 @@
 <div class="wrap">
 
   <header class="top">
-    <p class="eyebrow">Supera Farma · Regional Sul · IQVIA</p>
+    <p class="eyebrow">Supera Farma · IQVIA</p>
     <h1>Organizador de<br><span class="accent">Dinâmicas IQVIA</span></h1>
     <p class="lead">Sobe a base bruta exportada do IQVIA e recebe as <b>duas dinâmicas</b> já montadas, organizadas por setor e mês, com drill-down pronto para abrir em qualquer Excel. Tudo processado no seu navegador. Nenhum dado sai da máquina.</p>
   </header>
@@ -261,6 +261,10 @@
         <button class="btn btn-primary" id="gen">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Gerar planilha
+        </button>
+        <button class="btn btn-ghost" id="clear">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Limpar planilhas
         </button>
         <span class="hint">Duas abas, recolhidas por setor. Expanda os níveis no próprio Excel.</span>
       </div>
@@ -699,6 +703,17 @@ onmessage = function(e){
     outBlob = null;
   }
 
+  function limparTudo(){
+    if (worker){ worker.terminate(); worker = null; }
+    reset();
+    drop.classList.remove('has-file');
+    $('drop-title').textContent = 'Solte a base aqui';
+    $('drop-sub').innerHTML = 'ou <b>clique para selecionar</b> · arquivo .xlsx exportado do IQVIA';
+    fileInput.value = '';
+    baseName = 'base';
+    outName = 'DINAMICAS.xlsx';
+  }
+
   function showError(msg){
     $('prog').classList.add('hidden');
     $('err').classList.remove('hidden');
@@ -817,6 +832,7 @@ onmessage = function(e){
     setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
   }
   $('redown').addEventListener('click', download);
+  $('clear').addEventListener('click', limparTudo);
 
 })();
 </script>
