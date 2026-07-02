@@ -290,7 +290,7 @@
   </div>
 
   <div class="note">
-    <b>Como funciona.</b> O ZIP traz um arquivo <code>Análise mês a mês - [setor].xlsx</code> para cada setor, cada um com as duas abas e a mesma formatação. As abas abrem recolhidas: use os botões <code>1 2 3 4</code> ou o <code>+</code> para abrir os níveis. Os destaques são <b>dessazonalizados</b>: cada mês é comparado contra o peso normal daquele mês no setor, então a pré-alta de março não acende sozinha, e um mês fraco com venda boa acende mais fácil — mas o valor bruto precisa estar no mínimo na média do próprio item, para um mês de vale nunca acender. <b>Dourado em negrito</b> = venda excepcional (mínimo 3 unidades, acima da média dos pares e da própria média +2 desvios). <b>Amarelo claro</b> = oportunidade (mínimo 2 unidades, pelo menos 75% da média dos pares e acima da própria média +1 desvio). Valem para o total do setor, produto por mês, produto × brick (radar geográfico), mês de compra do PDV e detalhe PDV × produto, e acompanham a dinâmica ao expandir e recolher.
+    <b>Como funciona.</b> O ZIP traz um arquivo <code>Análise mês a mês - [setor].xlsx</code> para cada setor, cada um com as duas abas e a mesma formatação. As abas abrem recolhidas: use os botões <code>1 2 3 4</code> ou o <code>+</code> para abrir os níveis. Os destaques marcam <b>volume expressivo</b>, para achar no passado a venda que você quer repetir: cada mês é comparado com a média do próprio item na linha, sem descontar sazonalidade, então o número maior sempre aparece. <b>Dourado em negrito</b> = venda expressiva (mínimo 3 unidades e pelo menos 35% acima da média da linha). <b>Amarelo claro</b> = oportunidade (mínimo 2 unidades e pelo menos 15% acima da média da linha). Valem para o total do setor, produto por mês, produto × brick (radar geográfico), mês de compra do PDV e detalhe PDV × produto, e acompanham a dinâmica ao expandir e recolher.
   </div>
 
   <footer class="bot">
@@ -410,23 +410,13 @@ function buildPivotXlsx(rows, ci, meses){
   var grand=new Float64Array(nMes);
   for (var i2=0;i2<N;i2++){ var si=recIdx['Setor'][i2], mi=recMes[i2], vv=recVal[i2]; grid[si][mi]+=vv; grand[mi]+=vv; }
 
-  // ===== DESTAQUES: vendas expressivas e oportunidades (dessazonalizado) =====
-  // Fator sazonal do setor por mes: total do mes / media mensal. Cada celula e
-  // dividida pelo fator antes da estatistica, entao marco (pre-alta) nao acende
-  // automaticamente e um mes fraco com venda boa acende mais facil.
-  // Nivel 1 (dourado, negrito) - venda excepcional: v>=3, acima da media dos pares
-  //   e acima da propria media + 2 desvios (tudo dessazonalizado).
-  // Nivel 2 (amarelo claro) - oportunidade: v>=2, pelo menos 75% da media dos pares
-  //   e acima da propria media + 1 desvio.
-  // Trava anti-falso-positivo: o valor BRUTO precisa estar no minimo na media
-  //   bruta do proprio item (mes de vale que "resistiu a queda" nao acende).
-  var mediaMes=0; for (var fm=0;fm<nMes;fm++) mediaMes+=grand[fm]; mediaMes/=nMes;
-  var fator=new Float64Array(nMes);
-  for (var fm2=0;fm2<nMes;fm2++){
-    var fx2 = mediaMes>0 ? grand[fm2]/mediaMes : 1;
-    if (!isFinite(fx2) || fx2<=0) fx2=1;
-    fator[fm2]=Math.min(4, Math.max(0.25, fx2));
-  }
+  // ===== DESTAQUES: volume expressivo (achar venda no passado para repetir no presente) =====
+  // Criterio por celula (item x mes), SEM sazonalidade: compara o volume BRUTO do mes
+  // contra a media do proprio item na linha. Quanto mais acima da media, mais forte.
+  // Nivel 1 (dourado, negrito) - volume expressivo: v>=3 e v >= media da linha x 1,35.
+  // Nivel 2 (amarelo claro) - oportunidade: v>=2 e v >= media da linha x 1,15.
+  // O numero maior nunca perde para um menor: um mes de venda alta sempre destaca.
+  var FOLGA1=1.35, FOLGA2=1.15;
   function aggSeries(fields){
     var map=new Map();
     for (var ia=0;ia<N;ia++){
@@ -439,28 +429,20 @@ function buildPivotXlsx(rows, ci, meses){
     return map;
   }
   function pickHighlights(map){
-    var soma=0, cnt=0;
-    map.forEach(function(arr){ for(var m=0;m<nMes;m++){ var a0=arr[m]/fator[m]; if(a0>0){ soma+=a0; cnt++; } } });
-    var peer = cnt ? soma/cnt : 0;
     var out=[];
     map.forEach(function(arr,k){
-      var ad=new Float64Array(nMes);
-      var mu=0, muRaw=0;
-      for(var m1=0;m1<nMes;m1++){ ad[m1]=arr[m1]/fator[m1]; mu+=ad[m1]; muRaw+=arr[m1]; }
-      mu/=nMes; muRaw/=nMes;
-      var va=0; for(var m2=0;m2<nMes;m2++){ var d=ad[m2]-mu; va+=d*d; }
-      var sd=Math.sqrt(va/nMes);
+      var mu=0; for(var m1=0;m1<nMes;m1++) mu+=arr[m1]; mu/=nMes;
+      if (mu<=0) return;
       for(var m3=0;m3<nMes;m3++){
-        var v=arr[m3], a=ad[m3];
-        if (v<muRaw) continue; // trava anti-falso-positivo: bruto abaixo da propria media bruta nunca acende
+        var v=arr[m3];
         var tier=0;
-        if (v>=3 && a>peer && a>mu+2*sd) tier=1;             // venda excepcional
-        else if (v>=2 && a>=0.75*peer && a>mu+sd) tier=2;    // oportunidade
-        if (tier) out.push({key:k.split('|').slice(0,-1).map(Number), mes:m3, tier:tier, score:a/(mu+sd+1)});
+        if (v>=3 && v>=mu*FOLGA1) tier=1;      // volume expressivo
+        else if (v>=2 && v>=mu*FOLGA2) tier=2; // oportunidade
+        if (tier) out.push({key:k.split('|').slice(0,-1).map(Number), mes:m3, tier:tier, score:v/mu});
       }
     });
     out.sort(function(x,y){ return (x.tier-y.tier) || (y.score-x.score); });
-    if (out.length>8000) out.length=8000; // teto de seguranca, excepcionais primeiro
+    if (out.length>8000) out.length=8000; // teto de seguranca, mais expressivos primeiro
     return out;
   }
   // formatos ancorados na ESTRUTURA da pivot (item exato + mes), sobrevivem a expandir/recolher
