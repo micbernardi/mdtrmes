@@ -492,12 +492,21 @@ function buildPivotXlsx(rows, ci, meses){
   }
   var DXF_TIER={1:6, 2:7, 3:8, 4:9};
   // formatos ancorados na ESTRUTURA da pivot (item exato + mes), sobrevivem a expandir/recolher
-  function hlFormats(fields, hls){
+  // ATENCAO: em <reference><x v=.../> o v e a POSICAO do item na lista <items> do pivotField, nao o indice do
+  // sharedItem. Quando um campo e reordenado (seqs), e preciso converter indice -> posicao.
+  function posMaps(seqs){
+    var pm={};
+    if (!seqs) return pm;
+    Object.keys(seqs).forEach(function(f){ var seq=seqs[f], pos=new Int32Array(seq.length); for (var i=0;i<seq.length;i++) pos[seq[i]]=i; pm[f]=pos; });
+    return pm;
+  }
+  function hlFormats(fields, hls, seqs){
+    var pm=posMaps(seqs);
     var out=[];
     for (var h=0;h<hls.length;h++){
       var hl=hls[h];
       var refs=['<reference field="4294967294" count="1" selected="0"><x v="0"/></reference>'];
-      for (var q=0;q<fields.length;q++) refs.push('<reference field="'+fields[q]+'" count="1" selected="0"><x v="'+hl.key[q]+'"/></reference>');
+      for (var q=0;q<fields.length;q++){ var f=fields[q], v=hl.key[q]; if (pm[f]) v=pm[f][v]; refs.push('<reference field="'+f+'" count="1" selected="0"><x v="'+v+'"/></reference>'); }
       refs.push('<reference field="9" count="1" selected="0"><x v="'+hl.mes+'"/></reference>');
       out.push('<format dxfId="'+DXF_TIER[hl.tier]+'"><pivotArea collapsedLevelsAreSubtotals="1" fieldPosition="0"><references count="'+(fields.length+2)+'">'+refs.join('')+'</references></pivotArea></format>');
     }
@@ -696,13 +705,15 @@ function buildPivotXlsx(rows, ci, meses){
   // pivotTable1 = MARCA-BRICK-PDV (Setor>Marca>Brick>PDV) + destaques setor/marca/marca-brick/pdv-folha
   // ordem dos itens: Marca/Brick/Apresentação alfabeticas nas duas abas; PDV por unidades de REF (maiores primeiro) na aba PDV
   var seqMarca=alphaOrder('Marca'), seqBrick=alphaOrder('Brick'), seqApr=alphaOrder('Apresentação'), seqPDVAlpha=alphaOrder('PDV'), seqPDVRef=pdvOrderByRef();
+  var seq1={3:seqMarca, 4:seqBrick, 6:seqPDVAlpha};
   var pt1=pivotTable('Tabela dinâmica1',[2,3,4,6],'MARCA/BRICK/PDV',
-    hlFormats([2],hlSetor).concat(hlFormats([2,3],hlMarca), hlFormats([2,3,4],hlMarcaBrick), hlFormats([2,3,4,6],hlMBPleaf)),
-    {3:seqMarca, 4:seqBrick, 6:seqPDVAlpha});
+    hlFormats([2],hlSetor,seq1).concat(hlFormats([2,3],hlMarca,seq1), hlFormats([2,3,4],hlMarcaBrick,seq1), hlFormats([2,3,4,6],hlMBPleaf,seq1)),
+    seq1);
   // pivotTable2 = PDV-MARCA-APRESENTACAO (Setor>PDV>Marca>Apresentação) + destaques setor/pdv/marca-no-pdv
+  var seq2={6:seqPDVRef, 3:seqMarca, 7:seqApr};
   var pt2=pivotTable('Tabela dinâmica2',[2,6,3,7],'PDV/MARCA/APRESENTAÇÃO',
-    hlFormats([2],hlSetor).concat(hlFormats([2,6],hlPDV), hlFormats([2,6,3],hlPDVMarca)),
-    {6:seqPDVRef, 3:seqMarca, 7:seqApr});
+    hlFormats([2],hlSetor,seq2).concat(hlFormats([2,6],hlPDV,seq2), hlFormats([2,6,3],hlPDVMarca,seq2)),
+    seq2);
 
   // ===== plumbing =====
   var contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
