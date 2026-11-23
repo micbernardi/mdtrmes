@@ -290,7 +290,10 @@
   </div>
 
   <div class="note">
-    <b>Como funciona.</b> O ZIP traz um arquivo <code>Análise mês a mês - [setor].xlsx</code> para cada setor, cada um com as duas abas e a mesma formatação. As abas abrem recolhidas: use os botões <code>1 2 3 4</code> ou o <code>+</code> para abrir os níveis. Os destaques marcam <b>volume expressivo</b>, para achar no passado a venda que você quer repetir: cada mês é comparado com a média do próprio item na linha, sem descontar sazonalidade, então o número maior sempre aparece. <b>Dourado em negrito</b> = venda expressiva (mínimo 3 unidades e pelo menos 35% acima da média da linha). <b>Amarelo claro</b> = oportunidade (mínimo 2 unidades e pelo menos 15% acima da média da linha). Valem para o total do setor, produto por mês, produto × brick (radar geográfico), mês de compra do PDV e detalhe PDV × produto, e acompanham a dinâmica ao expandir e recolher.
+    <b>Como funciona.</b> O ZIP traz um arquivo <code>Análise mês a mês - [setor].xlsx</code> para cada setor, cada um com as duas abas e a mesma formatação. As abas abrem recolhidas: use os botões <code>1 2 3 4</code> ou o <code>+</code> para abrir os níveis. Há <b>dois sinais</b>, com cores diferentes, e os dois valem para o total do setor, produto por mês, produto × brick, mês de compra do PDV e detalhe PDV × produto, acompanhando a dinâmica ao expandir e recolher.<br><br>
+    <b>1 · Antecipar (dourado / amarelo) — onde vendeu muito.</b> Cada mês é comparado com a média dos <b>outros meses com venda</b> do próprio item na linha, sem descontar sazonalidade: serve para olhar os meses que vêm pela frente e preparar a venda. <b>Dourado em negrito</b> = pico expressivo (mínimo 3 un e 60%+ acima da média). <b>Amarelo claro</b> = pico moderado (mínimo 2 un e 30%+ acima). A linha precisa ter venda em pelo menos 3 meses e recebe no máximo 2 destaques, os mais fortes.<br><br>
+    <b>2 · Recuperar agora (vermelho forte / vermelho claro) — vendeu no mesmo mês do ano passado e não está vendendo hoje.</b> Só a <b>primeira coluna</b> (mesmo mês do ano anterior) recebe essa cor. O que vendeu nela é comparado com o <b>patamar atual</b> (o maior entre a média dos 3 últimos meses completos e o mês atual parcial); a diferença são as unidades a ir buscar. <b>Vermelho forte em negrito</b> = sumiu ou caiu pela metade (gap de 3+ un), ou gap de 10+ un com queda de 20% ou mais. <b>Vermelho claro</b> = caiu 40% ou mais (gap de 2+ un), ou gap de 5+ un com queda de 20% ou mais. Quando a célula é pico e também sumiu, o vermelho vence: é a oportunidade mais quente.<br><br>
+    O <b>último mês da base (parcial)</b> não entra em nenhuma média e não recebe destaque.
   </div>
 
   <footer class="bot">
@@ -306,7 +309,7 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.
 importScripts('https://cdn.jsdelivr.net/npm/fflate@0.8.3/umd/index.js');
 
 var STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0;\\(#,##0\\)"/></numFmts><fonts count="4"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><sz val="11"/><color theme="0"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><b/><sz val="11"/><color rgb="FF7F4F00"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><sz val="11"/><color rgb="FF7F4F00"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor theme="8" tint="0.79998168889431442"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF002060"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFD966"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="15"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" pivotButton="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" pivotButton="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="2" borderId="1" xfId="0" applyFill="1" applyBorder="1"/><xf numFmtId="17" fontId="0" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="17" fontId="0" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="2" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="2" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="3" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="3" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="8"><dxf><font><color theme="0"/></font><fill><patternFill patternType="solid"><bgColor rgb="FF002060"/></patternFill></fill><alignment horizontal="left" indent="0"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><fill><patternFill patternType="solid"><bgColor theme="4" tint="0.79998168889431442"/></patternFill></fill><alignment horizontal="left" indent="1"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><b/></font><fill><patternFill patternType="solid"><bgColor theme="0" tint="-4.9989318521683403E-2"/></patternFill></fill><alignment horizontal="right" indent="2"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><i/></font><alignment horizontal="right" indent="0"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><fill><patternFill patternType="solid"><bgColor theme="8" tint="0.79998168889431442"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><border outline="0"><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><vertical style="thin"><color indexed="64"/></vertical><horizontal style="thin"><color indexed="64"/></horizontal></border></dxf><dxf><font><b/><color rgb="FF7F4F00"/></font><fill><patternFill patternType="solid"><bgColor rgb="FFFFD966"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><color rgb="FF7F4F00"/></font><fill><patternFill patternType="solid"><bgColor rgb="FFFFF2CC"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf></dxfs></styleSheet>`;
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0;\\(#,##0\\)"/></numFmts><fonts count="6"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><sz val="11"/><color theme="0"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><b/><sz val="11"/><color rgb="FF7F4F00"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><sz val="11"/><color rgb="FF7F4F00"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><b/><sz val="11"/><color rgb="FF9C1C1C"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><sz val="11"/><color rgb="FF9C1C1C"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font></fonts><fills count="8"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor theme="8" tint="0.79998168889431442"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF002060"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFD966"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF4B6B6"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFCE4E4"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="19"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" pivotButton="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" pivotButton="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="2" borderId="1" xfId="0" applyFill="1" applyBorder="1"/><xf numFmtId="17" fontId="0" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="17" fontId="0" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="2" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="2" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="3" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="3" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="4" fillId="6" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="4" fillId="6" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="5" fillId="7" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="5" fillId="7" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="10"><dxf><font><color theme="0"/></font><fill><patternFill patternType="solid"><bgColor rgb="FF002060"/></patternFill></fill><alignment horizontal="left" indent="0"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><fill><patternFill patternType="solid"><bgColor theme="4" tint="0.79998168889431442"/></patternFill></fill><alignment horizontal="left" indent="1"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><b/></font><fill><patternFill patternType="solid"><bgColor theme="0" tint="-4.9989318521683403E-2"/></patternFill></fill><alignment horizontal="right" indent="2"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><i/></font><alignment horizontal="right" indent="0"/><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><fill><patternFill patternType="solid"><bgColor theme="8" tint="0.79998168889431442"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><border outline="0"><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><vertical style="thin"><color indexed="64"/></vertical><horizontal style="thin"><color indexed="64"/></horizontal></border></dxf><dxf><font><b/><color rgb="FF7F4F00"/></font><fill><patternFill patternType="solid"><bgColor rgb="FFFFD966"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><color rgb="FF7F4F00"/></font><fill><patternFill patternType="solid"><bgColor rgb="FFFFF2CC"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><b/><color rgb="FF9C1C1C"/></font><fill><patternFill patternType="solid"><bgColor rgb="FFF4B6B6"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf><dxf><font><color rgb="FF9C1C1C"/></font><fill><patternFill patternType="solid"><bgColor rgb="FFFCE4E4"/></patternFill></fill><border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom></border></dxf></dxfs></styleSheet>`;
 var THEME_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme"><a:themeElements><a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="44546A"/></a:dk2><a:lt2><a:srgbClr val="E7E6E6"/></a:lt2><a:accent1><a:srgbClr val="5B9BD5"/></a:accent1><a:accent2><a:srgbClr val="ED7D31"/></a:accent2><a:accent3><a:srgbClr val="A5A5A5"/></a:accent3><a:accent4><a:srgbClr val="FFC000"/></a:accent4><a:accent5><a:srgbClr val="4472C4"/></a:accent5><a:accent6><a:srgbClr val="70AD47"/></a:accent6><a:hlink><a:srgbClr val="0563C1"/></a:hlink><a:folHlink><a:srgbClr val="954F72"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Calibri Light" panose="020F0302020204030204"/><a:ea typeface=""/><a:cs typeface=""/><a:font script="Jpan" typeface="游ゴシック Light"/><a:font script="Hang" typeface="맑은 고딕"/><a:font script="Hans" typeface="等线 Light"/><a:font script="Hant" typeface="新細明體"/><a:font script="Arab" typeface="Times New Roman"/><a:font script="Hebr" typeface="Times New Roman"/><a:font script="Thai" typeface="Tahoma"/><a:font script="Ethi" typeface="Nyala"/><a:font script="Beng" typeface="Vrinda"/><a:font script="Gujr" typeface="Shruti"/><a:font script="Khmr" typeface="MoolBoran"/><a:font script="Knda" typeface="Tunga"/><a:font script="Guru" typeface="Raavi"/><a:font script="Cans" typeface="Euphemia"/><a:font script="Cher" typeface="Plantagenet Cherokee"/><a:font script="Yiii" typeface="Microsoft Yi Baiti"/><a:font script="Tibt" typeface="Microsoft Himalaya"/><a:font script="Thaa" typeface="MV Boli"/><a:font script="Deva" typeface="Mangal"/><a:font script="Telu" typeface="Gautami"/><a:font script="Taml" typeface="Latha"/><a:font script="Syrc" typeface="Estrangelo Edessa"/><a:font script="Orya" typeface="Kalinga"/><a:font script="Mlym" typeface="Kartika"/><a:font script="Laoo" typeface="DokChampa"/><a:font script="Sinh" typeface="Iskoola Pota"/><a:font script="Mong" typeface="Mongolian Baiti"/><a:font script="Viet" typeface="Times New Roman"/><a:font script="Uigh" typeface="Microsoft Uighur"/><a:font script="Geor" typeface="Sylfaen"/><a:font script="Armn" typeface="Arial"/><a:font script="Bugi" typeface="Leelawadee UI"/><a:font script="Bopo" typeface="Microsoft JhengHei"/><a:font script="Java" typeface="Javanese Text"/><a:font script="Lisu" typeface="Segoe UI"/><a:font script="Mymr" typeface="Myanmar Text"/><a:font script="Nkoo" typeface="Ebrima"/><a:font script="Olck" typeface="Nirmala UI"/><a:font script="Osma" typeface="Ebrima"/><a:font script="Phag" typeface="Phagspa"/><a:font script="Syrn" typeface="Estrangelo Edessa"/><a:font script="Syrj" typeface="Estrangelo Edessa"/><a:font script="Syre" typeface="Estrangelo Edessa"/><a:font script="Sora" typeface="Nirmala UI"/><a:font script="Tale" typeface="Microsoft Tai Le"/><a:font script="Talu" typeface="Microsoft New Tai Lue"/><a:font script="Tfng" typeface="Ebrima"/></a:majorFont><a:minorFont><a:latin typeface="Calibri" panose="020F0502020204030204"/><a:ea typeface=""/><a:cs typeface=""/><a:font script="Jpan" typeface="游ゴシック"/><a:font script="Hang" typeface="맑은 고딕"/><a:font script="Hans" typeface="等线"/><a:font script="Hant" typeface="新細明體"/><a:font script="Arab" typeface="Arial"/><a:font script="Hebr" typeface="Arial"/><a:font script="Thai" typeface="Tahoma"/><a:font script="Ethi" typeface="Nyala"/><a:font script="Beng" typeface="Vrinda"/><a:font script="Gujr" typeface="Shruti"/><a:font script="Khmr" typeface="DaunPenh"/><a:font script="Knda" typeface="Tunga"/><a:font script="Guru" typeface="Raavi"/><a:font script="Cans" typeface="Euphemia"/><a:font script="Cher" typeface="Plantagenet Cherokee"/><a:font script="Yiii" typeface="Microsoft Yi Baiti"/><a:font script="Tibt" typeface="Microsoft Himalaya"/><a:font script="Thaa" typeface="MV Boli"/><a:font script="Deva" typeface="Mangal"/><a:font script="Telu" typeface="Gautami"/><a:font script="Taml" typeface="Latha"/><a:font script="Syrc" typeface="Estrangelo Edessa"/><a:font script="Orya" typeface="Kalinga"/><a:font script="Mlym" typeface="Kartika"/><a:font script="Laoo" typeface="DokChampa"/><a:font script="Sinh" typeface="Iskoola Pota"/><a:font script="Mong" typeface="Mongolian Baiti"/><a:font script="Viet" typeface="Arial"/><a:font script="Uigh" typeface="Microsoft Uighur"/><a:font script="Geor" typeface="Sylfaen"/><a:font script="Armn" typeface="Arial"/><a:font script="Bugi" typeface="Leelawadee UI"/><a:font script="Bopo" typeface="Microsoft JhengHei"/><a:font script="Java" typeface="Javanese Text"/><a:font script="Lisu" typeface="Segoe UI"/><a:font script="Mymr" typeface="Myanmar Text"/><a:font script="Nkoo" typeface="Ebrima"/><a:font script="Olck" typeface="Nirmala UI"/><a:font script="Osma" typeface="Ebrima"/><a:font script="Phag" typeface="Phagspa"/><a:font script="Syrn" typeface="Estrangelo Edessa"/><a:font script="Syrj" typeface="Estrangelo Edessa"/><a:font script="Syre" typeface="Estrangelo Edessa"/><a:font script="Sora" typeface="Nirmala UI"/><a:font script="Tale" typeface="Microsoft Tai Le"/><a:font script="Talu" typeface="Microsoft New Tai Lue"/><a:font script="Tfng" typeface="Ebrima"/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:lumMod val="110000"/><a:satMod val="105000"/><a:tint val="67000"/></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:lumMod val="105000"/><a:satMod val="103000"/><a:tint val="73000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="105000"/><a:satMod val="109000"/><a:tint val="81000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:satMod val="103000"/><a:lumMod val="102000"/><a:tint val="94000"/></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:satMod val="110000"/><a:lumMod val="100000"/><a:shade val="100000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="99000"/><a:satMod val="120000"/><a:shade val="78000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln><a:ln w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln><a:ln w="19050" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad="57150" dist="19050" dir="5400000" algn="ctr" rotWithShape="0"><a:srgbClr val="000000"><a:alpha val="63000"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"><a:tint val="95000"/><a:satMod val="170000"/></a:schemeClr></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="93000"/><a:satMod val="150000"/><a:shade val="98000"/><a:lumMod val="102000"/></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:tint val="98000"/><a:satMod val="130000"/><a:shade val="90000"/><a:lumMod val="103000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="63000"/><a:satMod val="120000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/><a:extLst><a:ext uri="{05A4C25C-085E-4340-85A3-A5531E510DB2}"><thm15:themeFamily xmlns:thm15="http://schemas.microsoft.com/office/thememl/2012/main" name="Office Theme" id="{62F939B6-93AF-4DB8-9C6B-D6C7DFDC589F}" vid="{4A3C46E8-61CC-4603-A589-7422A47A8E4A}"/></a:ext></a:extLst></a:theme>`;
 
@@ -413,10 +416,16 @@ function buildPivotXlsx(rows, ci, meses){
   // ===== DESTAQUES: volume expressivo (achar venda no passado para repetir no presente) =====
   // Criterio por celula (item x mes), SEM sazonalidade: compara o volume BRUTO do mes
   // contra a media do proprio item na linha. Quanto mais acima da media, mais forte.
-  // Nivel 1 (dourado, negrito) - volume expressivo: v>=3 e v >= media da linha x 1,35.
-  // Nivel 2 (amarelo claro) - oportunidade: v>=2 e v >= media da linha x 1,15.
-  // O numero maior nunca perde para um menor: um mes de venda alta sempre destaca.
-  var FOLGA1=1.35, FOLGA2=1.15;
+  // Regras da media (para o destaque ser raro e significar algo):
+  //  - o ULTIMO mes da base (mes atual, parcial) nao entra na media nem recebe destaque;
+  //  - a media usa so os meses COM venda (zeros nao derrubam a regua);
+  //  - a media exclui o proprio mes avaliado (um pico nao infla a regua que o julga);
+  //  - a linha precisa ter venda em pelo menos MIN_MESES meses (compra isolada nao e padrao);
+  //  - no maximo TOP_N destaques por linha (os mais fortes).
+  // Nivel 1 (dourado, negrito) - volume expressivo: v>=3 e v >= media x 1,60.
+  // Nivel 2 (amarelo claro) - oportunidade: v>=2 e v >= media x 1,30.
+  var FOLGA1=1.60, FOLGA2=1.30, MIN_MESES=3, TOP_N=2;
+  var nMesAval = nMes>1 ? nMes-1 : nMes; // meses avaliados (sem o atual)
   function aggSeries(fields){
     var map=new Map();
     for (var ia=0;ia<N;ia++){
@@ -431,20 +440,57 @@ function buildPivotXlsx(rows, ci, meses){
   function pickHighlights(map){
     var out=[];
     map.forEach(function(arr,k){
-      var mu=0; for(var m1=0;m1<nMes;m1++) mu+=arr[m1]; mu/=nMes;
-      if (mu<=0) return;
-      for(var m3=0;m3<nMes;m3++){
-        var v=arr[m3];
+      var soma=0, nz=0;
+      for(var m1=0;m1<nMesAval;m1++){ if (arr[m1]>0){ soma+=arr[m1]; nz++; } }
+      if (nz<MIN_MESES) return; // compra isolada / serie curta: sem padrao para comparar
+      var cand=[];
+      for(var m3=0;m3<nMesAval;m3++){
+        var v=arr[m3]; if (v<=0) continue;
+        var mu=(soma-v)/(nz-1); // media dos OUTROS meses com venda
+        if (mu<=0) continue;
         var tier=0;
         if (v>=3 && v>=mu*FOLGA1) tier=1;      // volume expressivo
         else if (v>=2 && v>=mu*FOLGA2) tier=2; // oportunidade
-        if (tier) out.push({key:k.split('|').slice(0,-1).map(Number), mes:m3, tier:tier, score:v/mu});
+        if (tier) cand.push({mes:m3, tier:tier, score:v/mu});
       }
+      if (!cand.length) return;
+      cand.sort(function(x,y){ return (y.score-x.score); });
+      if (cand.length>TOP_N) cand.length=TOP_N; // so os mais fortes da linha
+      var key=k.split('|').slice(0,-1).map(Number);
+      for (var c=0;c<cand.length;c++) out.push({key:key, mes:cand[c].mes, tier:cand[c].tier, score:cand[c].score});
     });
     out.sort(function(x,y){ return (x.tier-y.tier) || (y.score-x.score); });
     if (out.length>8000) out.length=8000; // teto de seguranca, mais expressivos primeiro
     return out;
   }
+  // ===== RECUPERAR AGORA: mesmo mes do ano anterior x patamar atual =====
+  // A base vai de MES-12 ate MES ATUAL, entao a 1a coluna e o mesmo mes do ano passado (REF).
+  // Patamar atual = o maior entre a media dos 3 ultimos meses completos e o mes atual (parcial).
+  // Oportunidade = unidades de REF que nao estao sendo vendidas hoje.
+  // Nivel 3 (vermelho forte, negrito): caiu pela metade com gap>=3 un, OU gap>=10 un com queda de 20%+.
+  // Nivel 4 (vermelho claro):          caiu 40%+ com gap>=2 un, OU gap>=5 un com queda de 20%+.
+  // So a coluna REF recebe essa cor; e vence o destaque de pico quando os dois acontecem na mesma celula.
+  var REF=0, ATU=nMes-1, RUN=[];
+  if (nMes>=5) RUN=[nMes-4,nMes-3,nMes-2];
+  function pickGaps(map){
+    var out=[];
+    if (!RUN.length) return out;
+    map.forEach(function(arr,k){
+      var ref=arr[REF]; if (ref<2) return;
+      var run=(arr[RUN[0]]+arr[RUN[1]]+arr[RUN[2]])/3;
+      var base=Math.max(run, arr[ATU]);
+      var gap=ref-base;
+      var tier=0;
+      // percentual (pega o que sumiu) OU volume absoluto (pega a marca grande que caiu "pouco" mas em muitas unidades)
+      if ((ref>=3 && gap>=3 && base<=ref*0.5) || (gap>=10 && base<=ref*0.8)) tier=3;
+      else if ((gap>=2 && base<=ref*0.6) || (gap>=5 && base<=ref*0.8)) tier=4;
+      if (tier) out.push({key:k.split('|').slice(0,-1).map(Number), mes:REF, tier:tier, score:gap});
+    });
+    out.sort(function(x,y){ return (x.tier-y.tier) || (y.score-x.score); });
+    if (out.length>8000) out.length=8000;
+    return out;
+  }
+  var DXF_TIER={1:6, 2:7, 3:8, 4:9};
   // formatos ancorados na ESTRUTURA da pivot (item exato + mes), sobrevivem a expandir/recolher
   function hlFormats(fields, hls){
     var out=[];
@@ -453,17 +499,20 @@ function buildPivotXlsx(rows, ci, meses){
       var refs=['<reference field="4294967294" count="1" selected="0"><x v="0"/></reference>'];
       for (var q=0;q<fields.length;q++) refs.push('<reference field="'+fields[q]+'" count="1" selected="0"><x v="'+hl.key[q]+'"/></reference>');
       refs.push('<reference field="9" count="1" selected="0"><x v="'+hl.mes+'"/></reference>');
-      out.push('<format dxfId="'+(hl.tier===1?6:7)+'"><pivotArea collapsedLevelsAreSubtotals="1" fieldPosition="0"><references count="'+(fields.length+2)+'">'+refs.join('')+'</references></pivotArea></format>');
+      out.push('<format dxfId="'+DXF_TIER[hl.tier]+'"><pivotArea collapsedLevelsAreSubtotals="1" fieldPosition="0"><references count="'+(fields.length+2)+'">'+refs.join('')+'</references></pivotArea></format>');
     }
     return out;
   }
-  var hlSetor      = pickHighlights(aggSeries(['Setor']));                       // setor x mes
-  var hlMarca      = pickHighlights(aggSeries(['Setor','Marca']));               // produto x mes
-  var hlMarcaBrick = pickHighlights(aggSeries(['Setor','Marca','Brick']));       // produto x microrregiao (radar geografico)
-  var hlMBPleaf    = pickHighlights(aggSeries(['Setor','Marca','Brick','PDV'])); // pdv comprando um produto acima do normal
-  var hlPDV      = pickHighlights(aggSeries(['Setor','PDV']));                 // mes de compra total do pdv acima do normal
-  var hlPDVMarca = pickHighlights(aggSeries(['Setor','PDV','Marca']));         // produto dentro do pdv
-  var hlSetorSet={}; hlSetor.forEach(function(h){ hlSetorSet[h.key[0]+'_'+h.mes]=h.tier; });
+  // cada nivel recebe os dois sinais: picos (antecipar) primeiro, gaps (recuperar agora) depois -> gap vence na celula REF
+  var agSetor=aggSeries(['Setor']), agMarca=aggSeries(['Setor','Marca']), agMB=aggSeries(['Setor','Marca','Brick']),
+      agMBP=aggSeries(['Setor','Marca','Brick','PDV']), agPDV=aggSeries(['Setor','PDV']), agPM=aggSeries(['Setor','PDV','Marca']);
+  var hlSetor      = pickHighlights(agSetor).concat(pickGaps(agSetor));   // setor x mes
+  var hlMarca      = pickHighlights(agMarca).concat(pickGaps(agMarca));   // produto x mes
+  var hlMarcaBrick = pickHighlights(agMB).concat(pickGaps(agMB));         // produto x microrregiao (radar geografico)
+  var hlMBPleaf    = pickHighlights(agMBP).concat(pickGaps(agMBP));       // pdv x produto (folha da aba 1)
+  var hlPDV        = pickHighlights(agPDV).concat(pickGaps(agPDV));       // mes de compra total do pdv
+  var hlPDVMarca   = pickHighlights(agPM).concat(pickGaps(agPM));         // produto dentro do pdv
+  var hlSetorSet={}; hlSetor.forEach(function(h){ hlSetorSet[h.key[0]+'_'+h.mes]=h.tier; }); // gap sobrescreve pico (vem depois)
 
   // sharedStrings pool
   var ssList=[], ssMap=new Map();
@@ -499,7 +548,7 @@ function buildPivotXlsx(rows, ci, meses){
     for (var s2=0;s2<nSet;s2++){
       var rr=3+s2;
       p.push('<row r="'+rr+'" spans="1:'+lastColN+'"><c r="A'+rr+'" s="3" t="s"><v>'+setorS[s2]+'</v></c>');
-      for (var m2=0;m2<nMes;m2++){ var tr=hlSetorSet[s2+'_'+m2]; var sty = tr===1 ? est.hl : (tr===2 ? est.hl2 : est.dados); p.push('<c r="'+col(2+m2)+rr+'" s="'+sty+'"><v>'+fmtNum(grid[s2][m2])+'</v></c>'); }
+      for (var m2=0;m2<nMes;m2++){ var tr=hlSetorSet[s2+'_'+m2]; var sty = tr===1 ? est.hl : tr===2 ? est.hl2 : tr===3 ? est.hl3 : tr===4 ? est.hl4 : est.dados; p.push('<c r="'+col(2+m2)+rr+'" s="'+sty+'"><v>'+fmtNum(grid[s2][m2])+'</v></c>'); }
       p.push('</row>');
     }
     // linha grand (Total Geral embaixo): label s=5 (borda, sem azul) + dados
@@ -549,19 +598,35 @@ function buildPivotXlsx(rows, ci, meses){
 
   // ===== pivotTable =====
   function card(fieldIdx){ var name=CACHE_ORDER[fieldIdx]; if (name==='Mês') return nMes; return order[name].length; }
-  function itemsBlock(n, withSd){
+  // ===== ORDEM DOS ITENS (a ordem dos <item> define a ordem na dinamica) =====
+  var coll = (typeof Intl!=='undefined' && Intl.Collator) ? new Intl.Collator('pt-BR',{sensitivity:'base',numeric:true}) : null;
+  function cmpStr(a,b){ return coll ? coll.compare(a,b) : (a<b?-1:a>b?1:0); }
+  function alphaOrder(name){ // indices do campo em ordem alfabetica
+    var lst=order[name]; var idx=lst.map(function(_,i){return i;});
+    idx.sort(function(a,b){ return cmpStr(lst[a],lst[b]) || (a-b); });
+    return idx;
+  }
+  function pdvOrderByRef(){ // PDVs pelas unidades do mesmo mes do ano anterior (REF), maiores primeiro; desempate: total do periodo, nome
+    var lst=order['PDV'], n=lst.length;
+    var ref=new Float64Array(n), tot=new Float64Array(n), P=recIdx['PDV'];
+    for (var i=0;i<N;i++){ tot[P[i]]+=recVal[i]; if (recMes[i]===REF) ref[P[i]]+=recVal[i]; }
+    var idx=lst.map(function(_,i){return i;});
+    idx.sort(function(a,b){ return (ref[b]-ref[a]) || (tot[b]-tot[a]) || cmpStr(lst[a],lst[b]) || (a-b); });
+    return idx;
+  }
+  function itemsBlock(n, withSd, seq){
     var its='';
-    for(var i=0;i<n;i++) its+= withSd ? '<item sd="0" x="'+i+'"/>' : '<item x="'+i+'"/>';
+    for(var i=0;i<n;i++){ var x = seq ? seq[i] : i; its+= withSd ? '<item sd="0" x="'+x+'"/>' : '<item x="'+x+'"/>'; }
     return '<items count="'+(n+1)+'">'+its+'<item t="default"/></items>';
   }
-  function pivotFields(rowOrder, colAxis){
+  function pivotFields(rowOrder, colAxis, seqs){
     var lastRowField=rowOrder[rowOrder.length-1];
     var out=['<pivotFields count="10">'];
     for (var f=0;f<10;f++){
       if (rowOrder.indexOf(f)>=0){
         // rowFields nao-folha recebem sd=0 (recolhido); o ultimo nivel nao
         var withSd = (f!==lastRowField);
-        out.push('<pivotField axis="axisRow" showAll="0">'+itemsBlock(card(f), withSd)+'</pivotField>');
+        out.push('<pivotField axis="axisRow" showAll="0">'+itemsBlock(card(f), withSd, seqs && seqs[f])+'</pivotField>');
       }
       else if (f===colAxis) out.push('<pivotField axis="axisCol" numFmtId="17" showAll="0">'+itemsBlock(card(f), false)+'</pivotField>');
       else if (f===8) out.push('<pivotField dataField="1" showAll="0"/>');
@@ -594,7 +659,7 @@ function buildPivotXlsx(rows, ci, meses){
     if (extra && extra.length) f=f.concat(extra); // destaques por ultimo (vencem nos conflitos)
     return '<formats count="'+f.length+'">'+f.join('')+'</formats>';
   }
-  function pivotTable(name, rowOrder, rowCaption, extraFormats){
+  function pivotTable(name, rowOrder, rowCaption, extraFormats, seqs){
     var lastRow=2+nSet+1;
     var lastColL=col(1+nMes); // sem coluna Total Geral
     var NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
@@ -604,7 +669,7 @@ function buildPivotXlsx(rows, ci, meses){
     // de forma persistente mesmo ao expandir. rowGrandTotals fica default (=1) -> mantem a LINHA embaixo.
     p.push('<pivotTableDefinition '+NS+' name="'+esc(name)+'" cacheId="0" applyNumberFormats="0" applyBorderFormats="0" applyFontFormats="0" applyPatternFormats="0" applyAlignmentFormats="0" applyWidthHeightFormats="1" dataCaption="Valores" disableFieldList="1" updatedVersion="8" minRefreshableVersion="3" useAutoFormatting="1" itemPrintTitles="1" createdVersion="8" indent="0" outline="1" outlineData="1" multipleFieldFilters="0" colGrandTotals="0" rowHeaderCaption="'+esc(rowCaption)+'" colHeaderCaption=".">');
     p.push('<location ref="A1:'+lastColL+lastRow+'" firstHeaderRow="1" firstDataRow="2" firstDataCol="1"/>');
-    p.push(pivotFields(rowOrder, 9));
+    p.push(pivotFields(rowOrder, 9, seqs));
     p.push('<rowFields count="'+rowOrder.length+'">'+rowOrder.map(function(x){return '<field x="'+x+'"/>';}).join('')+'</rowFields>');
     p.push(rowItemsCollapsed());
     p.push('<colFields count="1"><field x="9"/></colFields>');
@@ -625,15 +690,19 @@ function buildPivotXlsx(rows, ci, meses){
 
   // ===== ORDEM INVERTIDA: aba1 = MARCA-BRICK-PDV, aba2 = PDV-MARCA-APRESENTACAO =====
   // sheet1 = MARCA-BRICK-PDV (dados centered s=7, meses s=9, B1 s=6, destaques s=12/14)
-  var sheet1=buildSheet(iCap_MBP, {b1:6, mesHdr:9, dados:7, hl:12, hl2:14});
+  var sheet1=buildSheet(iCap_MBP, {b1:6, mesHdr:9, dados:7, hl:12, hl2:14, hl3:16, hl4:18});
   // sheet2 = PDV-MARCA-APRESENTACAO (dados s=4, meses s=10, B1 s=1, destaques s=11/13)
-  var sheet2=buildSheet(iCap_PMA, {b1:1, mesHdr:10, dados:4, hl:11, hl2:13});
+  var sheet2=buildSheet(iCap_PMA, {b1:1, mesHdr:10, dados:4, hl:11, hl2:13, hl3:15, hl4:17});
   // pivotTable1 = MARCA-BRICK-PDV (Setor>Marca>Brick>PDV) + destaques setor/marca/marca-brick/pdv-folha
+  // ordem dos itens: Marca/Brick/Apresentação alfabeticas nas duas abas; PDV por unidades de REF (maiores primeiro) na aba PDV
+  var seqMarca=alphaOrder('Marca'), seqBrick=alphaOrder('Brick'), seqApr=alphaOrder('Apresentação'), seqPDVAlpha=alphaOrder('PDV'), seqPDVRef=pdvOrderByRef();
   var pt1=pivotTable('Tabela dinâmica1',[2,3,4,6],'MARCA/BRICK/PDV',
-    hlFormats([2],hlSetor).concat(hlFormats([2,3],hlMarca), hlFormats([2,3,4],hlMarcaBrick), hlFormats([2,3,4,6],hlMBPleaf)));
+    hlFormats([2],hlSetor).concat(hlFormats([2,3],hlMarca), hlFormats([2,3,4],hlMarcaBrick), hlFormats([2,3,4,6],hlMBPleaf)),
+    {3:seqMarca, 4:seqBrick, 6:seqPDVAlpha});
   // pivotTable2 = PDV-MARCA-APRESENTACAO (Setor>PDV>Marca>Apresentação) + destaques setor/pdv/marca-no-pdv
   var pt2=pivotTable('Tabela dinâmica2',[2,6,3,7],'PDV/MARCA/APRESENTAÇÃO',
-    hlFormats([2],hlSetor).concat(hlFormats([2,6],hlPDV), hlFormats([2,6,3],hlPDVMarca)));
+    hlFormats([2],hlSetor).concat(hlFormats([2,6],hlPDV), hlFormats([2,6,3],hlPDVMarca)),
+    {6:seqPDVRef, 3:seqMarca, 7:seqApr});
 
   // ===== plumbing =====
   var contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
